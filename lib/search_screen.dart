@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:search_app/address.dart';
@@ -15,6 +17,9 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final dio = Dio();
   final list = <Address>[];
+
+  Timer? timer;
+  StreamSubscription? subscription;
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +103,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     onTap: () {
                       Navigator.of(context).pushNamed(
                         DetailsScreen.routeName,
-                        arguments: address.name,
+                        arguments: address,
                       );
                     },
                     child: SearchListItem(
@@ -117,27 +122,36 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> _onTextChanged(String text) async {
     try {
-      if (text.isNotEmpty) {
-        final response = await dio.get(
-            'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$text&key=XXXX');
-        final data = response.data as Map<String, dynamic>;
-        final predictions = data['predictions'] as List;
-        final addresses = predictions.map(
-          (e) {
-            final addressJson = e as Map<String, dynamic>;
+      subscription?.cancel();
+      timer?.cancel();
+      timer = Timer(const Duration(milliseconds: 400), () async {
+        print('loading: $text');
+        if (text.isNotEmpty) {
+          final response = dio.get(
+              'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$text&key=AIzaSyDSc3bK2uacejfepEMiJlrVw9DFC8WVonI');
 
-            return Address(
-              name: addressJson['structured_formatting']['main_text'],
-              desc: addressJson['description'],
-            );
-          },
-        ).toList();
+          subscription = Stream.fromFuture(response).listen((response) {
+            final data = response.data as Map<String, dynamic>;
+            final predictions = data['predictions'] as List;
+            final addresses = predictions.map(
+              (e) {
+                final addressJson = e as Map<String, dynamic>;
 
-        list.clear();
-        list.addAll(addresses);
-      } else {
-        list.clear();
-      }
+                return Address(
+                  name: addressJson['structured_formatting']['main_text'],
+                  desc: addressJson['description'],
+                  placeId: addressJson['place_id'],
+                );
+              },
+            ).toList();
+
+            list.clear();
+            list.addAll(addresses);
+          });
+        } else {
+          list.clear();
+        }
+      });
     } on Object catch (e) {
       print('Error: $e');
     }

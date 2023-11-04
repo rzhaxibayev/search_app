@@ -1,11 +1,11 @@
-class Address {
+class AddressForDetail {
   final String name;
-  final String desc;
+  final String website;
   final String placeId;
 
-  Address({
+  AddressForDetail({
     required this.name,
-    required this.desc,
+    required this.website,
     required this.placeId,
   });
 }
