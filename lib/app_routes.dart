@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:search_app/address.dart';
 import 'package:search_app/details_screen.dart';
 import 'package:search_app/search_screen.dart';
 
@@ -16,10 +17,10 @@ class AppRoutes {
           settings: settings,
         );
       case DetailsScreen.routeName:
-        final name = settings.arguments as String;
+        final address = settings.arguments as Address;
         return MaterialPageRoute(
           builder: (context) {
-            return DetailsScreen(name: name);
+            return DetailsScreen(address: address);
           },
           settings: settings,
         );
