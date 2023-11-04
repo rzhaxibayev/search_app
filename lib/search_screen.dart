@@ -145,17 +145,19 @@ class _SearchScreenState extends State<SearchScreen> {
               },
             ).toList();
 
-            list.clear();
-            list.addAll(addresses);
+            setState(() {
+              list.clear();
+              list.addAll(addresses);
+            });
           });
         } else {
-          list.clear();
+          setState(() {
+            list.clear();
+          });
         }
       });
     } on Object catch (e) {
       print('Error: $e');
     }
-
-    setState(() {});
   }
 }
