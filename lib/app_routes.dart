@@ -17,10 +17,16 @@ class AppRoutes {
           settings: settings,
         );
       case DetailsScreen.routeName:
-        final address = settings.arguments as Address;
+        final address = settings.arguments as Address?;
         return MaterialPageRoute(
           builder: (context) {
-            return DetailsScreen(address: address);
+            return DetailsScreen(
+                address: address ??
+                    Address(
+                      name: 'name',
+                      desc: 'desc',
+                      placeId: 'placeId',
+                    ));
           },
           settings: settings,
         );
