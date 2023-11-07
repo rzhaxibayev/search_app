@@ -44,7 +44,7 @@ class SearchListItem extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.chevron_right),
+          const Icon(Icons.chevron_right),
         ],
       ),
     );

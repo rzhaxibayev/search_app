@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:search_app/address.dart';
 import 'package:search_app/details_screen.dart';
-import 'package:search_app/search_list_item.dart';
+import 'package:search_app/features/search/data/search_repository.dart';
+import 'package:search_app/features/search/data/search_service.dart';
+import 'package:search_app/features/search/domain/model/prediction_model.dart';
+import 'package:search_app/features/search/domain/search_use_case.dart';
+import 'package:search_app/features/search/ui/screens/search/search_list_item.dart';
 
 class SearchScreen extends StatefulWidget {
   static const routeName = 'search_screen';
@@ -15,11 +18,23 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final dio = Dio();
-  final list = <Address>[];
+  late SearchService service;
+  late SearchRepository repository;
+  late SearchUseCase useCase;
+
+  final list = <PredictionModel>[];
 
   Timer? timer;
   StreamSubscription? subscription;
+
+  @override
+  void initState() {
+    service = SearchService(dio: Dio());
+    repository = SearchRepository(service: service);
+    useCase = SearchUseCase(repository: repository);
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,18 +112,18 @@ class _SearchScreenState extends State<SearchScreen> {
               child: ListView.builder(
                 itemCount: list.length,
                 itemBuilder: (context, index) {
-                  final address = list[index];
+                  final prediction = list[index];
 
                   return InkWell(
                     onTap: () {
                       Navigator.of(context).pushNamed(
                         DetailsScreen.routeName,
-                        arguments: address,
+                        arguments: null,
                       );
                     },
                     child: SearchListItem(
-                      name: address.name,
-                      desc: address.desc,
+                      name: prediction.fullText,
+                      desc: '',
                     ),
                   );
                 },
@@ -127,27 +142,12 @@ class _SearchScreenState extends State<SearchScreen> {
       timer = Timer(const Duration(milliseconds: 400), () async {
         print('loading: $text');
         if (text.isNotEmpty) {
-          final response = dio.get(
-              'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$text&key=AIzaSyDSc3bK2uacejfepEMiJlrVw9DFC8WVonI');
-
-          subscription = Stream.fromFuture(response).listen((response) {
-            final data = response.data as Map<String, dynamic>;
-            final predictions = data['predictions'] as List;
-            final addresses = predictions.map(
-              (e) {
-                final addressJson = e as Map<String, dynamic>;
-
-                return Address(
-                  name: addressJson['structured_formatting']['main_text'],
-                  desc: addressJson['description'],
-                  placeId: addressJson['place_id'],
-                );
-              },
-            ).toList();
-
+          final predictions = useCase.getPredictions(text: text);
+          subscription =
+              Stream.fromFuture(predictions).listen((predictionList) async {
             setState(() {
               list.clear();
-              list.addAll(addresses);
+              list.addAll(predictionList);
             });
           });
         } else {
