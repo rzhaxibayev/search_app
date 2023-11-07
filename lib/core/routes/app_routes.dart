@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:search_app/address.dart';
 import 'package:search_app/details_screen.dart';
-import 'package:search_app/search_screen.dart';
+import 'package:search_app/features/search/ui/screens/search/search_screen.dart';
 
 class AppRoutes {
   static Route<Object?> onGenerateRoute(RouteSettings settings) {

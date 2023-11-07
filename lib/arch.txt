@@ -1,0 +1,21 @@
+Project - Clean Architecture
+
+- core
+- features
+    - feature 1
+        - data
+            search_service.dart (json to DTO)
+            search_repository.dart (DTO to Model)
+        - domain
+            search_interactor.dart (Model, Business Logic)
+        - ui
+            - screens
+                - details
+                    details_screen.dart
+                - search
+                    search_screen.dart
+    - feature 2
+    - ...
+- ui_kit
+main.dart
+pubspec.yaml
